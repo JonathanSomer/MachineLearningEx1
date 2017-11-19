@@ -1,7 +1,9 @@
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from numpy import *
+
 
 def generate_m_pairs(m):
     points = []
@@ -52,19 +54,16 @@ def generate_y_given_x(x):
     return y
 
 
+
 '''
-receives an array of (x,y)
-and plots!
+returns X and Y sorted by Xs value
 '''
-def plot_points(points):
-    X = [point[0] for point in points]
-    Y = [point[1] for point in points]
-    plt.plot(X, Y, 'ro')
-    plt.axis([-0.1, 1.1, -0.1, 1.1])
-    plt.axvline(x=0.25)
-    plt.axvline(x=0.5)
-    plt.axvline(x=0.75)
-    plt.show()
+def X_Y_from_points(points):
+    # sort by Xs
+    sorted_points = sorted(points, key=lambda tup: tup[0])
+    X = [point[0] for point in sorted_points]
+    Y = [point[1] for point in sorted_points]
+    return X, Y
 
 
 '''
@@ -122,5 +121,32 @@ def find_best_interval(xs, ys, k):
 
     return intervals, besterror
 
+
+
+'''
+(a)
+
+receives an array of (x,y)
+and plots!
+'''
+def plot_points(points):
+    X, Y = X_Y_from_points(points)
+
+    plt.plot(X, Y, 'ro')
+    plt.axis([-0.1, 1.1, -0.1, 1.1])
+    plt.axvline(x=0.25)
+    plt.axvline(x=0.5)
+    plt.axvline(x=0.75)
+
+    #plot segmemts:
+    intervals, best_error = find_best_interval(X, Y, 2)
+
+    for interval in intervals:
+        current_color = np.random.rand(3,1)
+        plt.axvline(x=interval[0], c=current_color, linewidth=5)
+        plt.axvline(x=interval[1], c=current_color, linewidth=5)
+        # plt.plot(interval, [0.5,0.5], 'm', linewidth=10, c=current_color)
+
+    plt.show()
 
 plot_points(generate_m_pairs(100))
