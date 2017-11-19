@@ -149,4 +149,79 @@ def plot_points(points):
 
     plt.show()
 
+
+'''
+WRITE THIS IN LATEX!!!
+
+(b)
+The best hypothesis gives:
+    x in [0, 0.25] or x in [0.5, 0.75] -> 1
+    x in [0.25, 0.5] or x in [0.75, 1] -> 0
+'''
+
+
+'''
+calculates the true error for the distribution in the exercise
+given a hypothesis (as a set of intervals)
+
+the algorithm:
+1. split all segments that cross 0.25, 0.5, 0.75
+2. sum segments length of each type:
+    a. [0, 0.25] or x in [0.5, 0.75]: these are 0.8 chance to be 1 segmemts
+    b. [0.25, 0.5] or x in [0.75, 1]: these are 0.1 chance to be 1 segments
+
+3. sum: (error chance per each segment type * segment length)
+    note: the segment length is also the chance of a point to be in the segment 
+    (since X is uniformally distributed and the whole domain's length is 1)  
+'''
+def true_error(intervals):
+
+    # 1. split all segments that cross 0.25, 0.5, 0.75
+    crossing_intervals = [ interval for interval in intervals if is_crossing(interval)]
+    non_crossing_intervals = [ interval for interval in intervals if not is_crossing(interval)]
+
+    for interval in crossing_intervals:
+        non_crossing_intervals.extend(split_crossing_interval(interval))
+
+    # 2. sum segments length by type
+    total_08_intervals_length = total_01_intervals_length = 0
+    for interval in intervals:
+        current_interval_length = interval[1] - interval[0]
+        if (interval[0] >= 0 and interval[1] <= 0.25) or (interval[0] >= 0.5 and interval[1] <= 0.75):
+            total_08_intervals_length += current_interval_length
+        else:
+            total_01_intervals_length += current_interval_length
+
+    # sum error over segment types:
+    error = 0
+    error += 0.2 * total_08_intervals_length
+    error += 0.8 * (0.5 - total_08_intervals_length)
+    error += 0.9 * total_01_intervals_length
+    error += 0.1 * (0.5 - total_01_intervals_length)
+
+    return error
+
+
+
+
+def is_crossing(interval):
+    return interval_crosses_x(interval, 0.25) or interval_crosses_x(interval, 0.5) or interval_crosses_x(interval, 0.75)
+
+
+def interval_crosses_x(interval, x):
+    return interval[0] <= x and interval[1] >= x
+
+
+def split_crossing_interval(interval):
+    if interval_crosses_x(interval, 0.25):
+        return [(interval[0], 0.25), (0.25, interval[1])]
+    elif interval_crosses_x(interval, 0.5):
+        return [(interval[0], 0.5), (0.5, interval[1])]
+    else:
+        return [(interval[0], 0.75), (0.75, interval[1])]
+
+
+
+
 plot_points(generate_m_pairs(100))
+
