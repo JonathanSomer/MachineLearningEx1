@@ -177,8 +177,8 @@ the algorithm:
 def true_error(intervals):
 
     # 1. split all segments that cross 0.25, 0.5, 0.75
-    crossing_intervals = [ interval for interval in intervals if is_crossing(interval)]
-    non_crossing_intervals = [ interval for interval in intervals if not is_crossing(interval)]
+    crossing_intervals = [interval for interval in intervals if is_crossing(interval)]
+    non_crossing_intervals = [interval for interval in intervals if not is_crossing(interval)]
 
     for interval in crossing_intervals:
         non_crossing_intervals.extend(split_crossing_interval(interval))
@@ -202,14 +202,12 @@ def true_error(intervals):
     return error
 
 
-
-
 def is_crossing(interval):
     return interval_crosses_x(interval, 0.25) or interval_crosses_x(interval, 0.5) or interval_crosses_x(interval, 0.75)
 
 
 def interval_crosses_x(interval, x):
-    return interval[0] <= x and interval[1] >= x
+    return interval[0] <= x <= interval[1]
 
 
 def split_crossing_interval(interval):
