@@ -121,11 +121,7 @@ def find_best_interval(xs, ys, k):
 
     return intervals, besterror
 
-
-
 '''
-(a)
-
 receives an array of (x,y)
 and plots!
 '''
@@ -145,7 +141,7 @@ def plot_points(points):
         current_color = np.random.rand(3,1)
         plt.axvline(x=interval[0], c=current_color, linewidth=5)
         plt.axvline(x=interval[1], c=current_color, linewidth=5)
-        # plt.plot(interval, [0.5,0.5], 'm', linewidth=10, c=current_color)
+        plt.plot(interval, [0.5,0.5], 'm', linewidth=10, c=current_color)
 
     plt.show()
 
@@ -219,7 +215,80 @@ def split_crossing_interval(interval):
         return [(interval[0], 0.75), (0.75, interval[1])]
 
 
+def empirical_error(intervals, points):
+    error = 0.0
+    for point in points:
+        is_in_interval = False
+        for interval in intervals:
+            if interval[0] <= point[0] <= interval[1]:
+                is_in_interval = True
+        if (point[1] == 0 and is_in_interval) or (point[1] == 1 and not is_in_interval):
+            error += 1
+    return error / len(points)
 
 
-plot_points(generate_m_pairs(100))
+
+'''
+(a)
+'''
+def part_A():
+    plot_points(generate_m_pairs(100))
+
+
+'''
+(c)
+TODO still need to discuss the resuls!!!
+'''
+def part_C():
+    k=2 # number of intervals
+    T=50 # times
+    Ms = []
+    true_errors = []
+    empirical_errors = []
+    for m in range(10, 50, 5):
+        true_errors_sum = 0
+        empirical_errors_sum = 0
+        for i in range(T):
+            points = generate_m_pairs(m)
+            X, Y = X_Y_from_points(points)
+            intervals, besterror = find_best_interval(X, Y, k) # not really going to use this besterror
+            empirical_errors_sum += empirical_error(intervals, points=points)
+            # print("empirical error for " + str(m) + " is: " + str(empirical_error(intervals, points=points)))
+            true_errors_sum += true_error(intervals)
+        Ms.append(m)
+        true_errors.append(true_errors_sum/T)
+        empirical_errors.append(empirical_errors_sum/T)
+
+    plt.plot(Ms, true_errors)
+    plt.show()
+    plt.plot(Ms, empirical_errors)
+    plt.show()
+
+
+
+# test for empirical error func:
+# points = [(0.2, 0), (0.7, 1)]
+# intervals = [(0.1, 0.5)]
+# print (empirical_error(intervals, points))
+
+
+''' 
+(d)
+'''
+def part_D():
+    points = generate_m_pairs(50)
+    X, Y = X_Y_from_points(points)
+    empirical_errors = []
+    true_errors = []
+    Ks = []
+    for k in range(1,20):
+        intervals, besterror = find_best_interval(X, Y, k)
+        empirical_errors.append(empirical_error(intervals, points))
+        true_errors.append(true_error(intervals))
+        Ks.append(k)
+
+    plt.plot(Ks, true_errors)
+    plt.show()
+    plt.plot(Ks, empirical_errors)
+    plt.show()
 
