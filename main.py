@@ -84,6 +84,8 @@ def plot_points(points):
         plt.axvline(x=interval[1], c=current_color, linewidth=5)
         plt.plot(interval, [0.5,0.5], 'm', linewidth=10, c=current_color)
 
+    plt.xlabel("x")
+    plt.ylabel("y")
     plt.show()
 
 '''
@@ -150,7 +152,7 @@ def split_crossing_interval(interval):
         return [(interval[0], 0.75), (0.75, interval[1])]
 
 '''
-Calculates the empirical error given the intervals and points 
+Calculates the empirical error given the intervals and points
 '''
 def empirical_error(intervals, points):
     error = 0.0
@@ -195,42 +197,66 @@ def part_C():
 
     # plot m against true error
     plt.plot(Ms, true_errors)
+    plt.xlabel("m (samples)")
+    plt.ylabel("True Error")
     plt.show()
 
     # plot m against empirical error
     plt.plot(Ms, empirical_errors)
+    plt.xlabel("m (samples)")
+    plt.ylabel("Empirical Error")
     plt.show()
 
-def part_D():
+def part_D(plot=True):
     points = generate_m_pairs(50)
     X, Y = X_Y_from_points(points)
+    hypotheses = []
     empirical_errors = []
     true_errors = []
     Ks = []
 
     for k in range(1,20):
         intervals, besterror = find_best_interval(X, Y, k)
+        hypotheses.append(intervals)
         empirical_errors.append(empirical_error(intervals, points))
         true_errors.append(true_error(intervals))
         Ks.append(k)
 
-    # plot k against true error
-    plt.plot(Ks, true_errors)
-    plt.xlabel("k (intervals)")
-    plt.ylabel("True Error")
-    plt.show()
+    if (plot):
+        # plot k against true error
+        plt.plot(Ks, true_errors)
+        plt.xlabel("k (intervals)")
+        plt.ylabel("True Error")
+        plt.show()
 
-    # plot k against empirical error
-    plt.plot(Ks, empirical_errors)
-    plt.ylabel("Empirical Error")
-    plt.show()
+        # plot k against empirical error
+        plt.plot(Ks, empirical_errors)
+        plt.xlabel("k (intervals)")
+        plt.ylabel("Empirical Error")
+        plt.show()
+
+    return hypotheses
 
 def part_E():
     # generate additional holdout validation samples
     holdout_samples = generate_m_pairs(50)
     holdX, holdY = X_Y_from_points(holdout_samples)
 
+    # retrieve hypothesis from part (d)
+    hypotheses = part_D(False)
+
+    # measure true errors according to validation set
+    true_errors = []
+
     # perform holdout validation
+    for i in range(len(hypotheses)):
+        h = hypotheses[i]
+        true_errors.append(true_error(h))
+
+    # define K* to be the hypothesis with the minimal true error
+    k_star = true_errors.index(min(true_errors))
+
+    return k_star
 
 ######################################
 # Input arguments handling
