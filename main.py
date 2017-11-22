@@ -1,9 +1,14 @@
+import sys
 import random
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from numpy import *
+from intervals import *
 
+######################################
+# Helper functions
+######################################
 
 def generate_m_pairs(m):
     points = []
@@ -13,31 +18,26 @@ def generate_m_pairs(m):
 
     return points
 
-
 '''
-draw a pair of points x,y according to the required distribution
+Draws a pair of points (x,y) according to the required distribution
 '''
 def generate_pair():
     x = generate_x()
     y = generate_y_given_x(x)
     return x, y
 
-
 '''
 X is distributed uniformally on [0,1]
 '''
 def generate_x():
-
     return random.uniform(0,1)
 
-
-''' 
-Y is distributed: 
+'''
+Y is distributed:
 0.8 if x in [0, 0.25] or x in [0.5, 0.75]
 0.1 if x in [0.25, 0.5] or x in [0.75, 1]
 '''
 def generate_y_given_x(x):
-
     # a temporary number used to decide which value to give y
     p = random.uniform(0, 1)
 
@@ -53,77 +53,18 @@ def generate_y_given_x(x):
             y = 0
     return y
 
-
-
 '''
-returns X and Y sorted by Xs value
+Returns X and Y sorted by Xs value
 '''
 def X_Y_from_points(points):
     # sort by Xs
-    sorted_points = sorted(points, key=lambda tup: tup[0])
+    sorted_points = sorted(points, key=lambda pair: pair[0])
     X = [point[0] for point in sorted_points]
     Y = [point[1] for point in sorted_points]
     return X, Y
 
-
 '''
-the ERM from the course site:
-'''
-def find_best_interval(xs, ys, k):
-    assert all(array(xs) == array(sorted(xs))), "xs must be sorted!"
-
-    xs = array(xs)
-    ys = array(ys)
-    m = len(xs)
-    P = [[None for j in range(k + 1)] for i in range(m + 1)]
-    E = zeros((m + 1, k + 1), dtype=int)
-
-    # Calculate the cumulative sum of ys, to be used later
-    cy = concatenate([[0], cumsum(ys)])
-
-    # Initialize boundaries:
-    # The error of no intervals, for the first i points
-    E[:m + 1, 0] = cy
-
-    # The minimal error of j intervals on 0 points - always 0. No update needed.
-
-    # Fill middle
-    for i in range(1, m + 1):
-        for j in range(1, k + 1):
-            # The minimal error of j intervals on the first i points:
-
-            # Exhaust all the options for the last interval. Each interval boundary is marked as either
-            # 0 (Before first point), 1 (after first point, before second), ..., m (after last point)
-            options = []
-            for l in range(0, i + 1):
-                next_errors = E[l, j - 1] + (cy[i] - cy[l]) + concatenate(
-                    [[0], cumsum((-1) ** (ys[arange(l, i)] == 1))])
-                min_error = argmin(next_errors)
-                options.append((next_errors[min_error], (l, arange(l, i + 1)[min_error])))
-
-            E[i, j], P[i][j] = min(options)
-
-    # Extract best interval set and its error count
-    best = []
-    cur = P[m][k]
-    for i in range(k, 0, -1):
-        best.append(cur)
-        cur = P[cur[0]][i - 1]
-        if cur == None:
-            break
-    best = sorted(best)
-    besterror = E[m, k]
-
-    # Convert interval boundaries to numbers in [0,1]
-    exs = concatenate([[0], xs, [1]])
-    representatives = (exs[1:] + exs[:-1]) / 2.0
-    intervals = [(representatives[l], representatives[u]) for l, u in best]
-
-    return intervals, besterror
-
-'''
-receives an array of (x,y)
-and plots!
+Receives an array of (x,y) and plots!
 '''
 def plot_points(points):
     X, Y = X_Y_from_points(points)
@@ -145,33 +86,21 @@ def plot_points(points):
 
     plt.show()
 
-
 '''
-WRITE THIS IN LATEX!!!
-
-(b)
-The best hypothesis gives:
-    x in [0, 0.25] or x in [0.5, 0.75] -> 1
-    x in [0.25, 0.5] or x in [0.75, 1] -> 0
-'''
-
-
-'''
-calculates the true error for the distribution in the exercise
+Calculates the true error for the distribution in the exercise
 given a hypothesis (as a set of intervals)
 
-the algorithm:
-1. split all segments that cross 0.25, 0.5, 0.75
-2. sum segments length of each type:
+The algorithm:
+1. Split all segments that cross 0.25, 0.5, 0.75
+2. Sum segments length of each type:
     a. [0, 0.25] or x in [0.5, 0.75]: these are 0.8 chance to be 1 segmemts
     b. [0.25, 0.5] or x in [0.75, 1]: these are 0.1 chance to be 1 segments
 
-3. sum: (error chance per each segment type * segment length)
-    note: the segment length is also the chance of a point to be in the segment 
-    (since X is uniformally distributed and the whole domain's length is 1)  
+3. Sum: (error chance per each segment type * segment length)
+    note: the segment length is also the chance of a point to be in the segment
+    (since X is uniformally distributed and the whole domain's length is 1)
 '''
 def true_error(intervals):
-
     # 1. split all segments that cross 0.25, 0.5, 0.75
     crossing_intervals = [interval for interval in intervals if is_crossing(interval)]
     non_crossing_intervals = [interval for interval in intervals if not is_crossing(interval)]
@@ -197,15 +126,21 @@ def true_error(intervals):
 
     return error
 
-
+'''
+Returns true iff the interval is crossing either one of 0.25, 0.5, 0.75
+'''
 def is_crossing(interval):
     return interval_crosses_x(interval, 0.25) or interval_crosses_x(interval, 0.5) or interval_crosses_x(interval, 0.75)
 
-
+'''
+Returns true iff the interval is crossing a certain value x
+'''
 def interval_crosses_x(interval, x):
     return interval[0] <= x <= interval[1]
 
-
+'''
+Splits intervals that cross into 2 separated intervals
+'''
 def split_crossing_interval(interval):
     if interval_crosses_x(interval, 0.25):
         return [(interval[0], 0.25), (0.25, interval[1])]
@@ -214,7 +149,9 @@ def split_crossing_interval(interval):
     else:
         return [(interval[0], 0.75), (0.75, interval[1])]
 
-
+'''
+Calculates the empirical error given the intervals and points 
+'''
 def empirical_error(intervals, points):
     error = 0.0
     for point in points:
@@ -226,69 +163,92 @@ def empirical_error(intervals, points):
             error += 1
     return error / len(points)
 
+######################################
+# Below are the subquestions functions
+######################################
 
-
-'''
-(a)
-'''
 def part_A():
     plot_points(generate_m_pairs(100))
 
-
-'''
-(c)
-TODO still need to discuss the resuls!!!
-'''
 def part_C():
-    k=2 # number of intervals
-    T=50 # times
+    k = 2 # number of intervals
+    T = 100 # times
     Ms = []
     true_errors = []
     empirical_errors = []
+
     for m in range(10, 50, 5):
         true_errors_sum = 0
         empirical_errors_sum = 0
+
         for i in range(T):
             points = generate_m_pairs(m)
             X, Y = X_Y_from_points(points)
             intervals, besterror = find_best_interval(X, Y, k) # not really going to use this besterror
             empirical_errors_sum += empirical_error(intervals, points=points)
-            # print("empirical error for " + str(m) + " is: " + str(empirical_error(intervals, points=points)))
+            print("empirical error for " + str(m) + " is: " + str(empirical_error(intervals, points=points)))
             true_errors_sum += true_error(intervals)
+
         Ms.append(m)
         true_errors.append(true_errors_sum/T)
         empirical_errors.append(empirical_errors_sum/T)
 
+    # plot m against true error
     plt.plot(Ms, true_errors)
     plt.show()
+
+    # plot m against empirical error
     plt.plot(Ms, empirical_errors)
     plt.show()
 
-
-
-# test for empirical error func:
-# points = [(0.2, 0), (0.7, 1)]
-# intervals = [(0.1, 0.5)]
-# print (empirical_error(intervals, points))
-
-
-''' 
-(d)
-'''
 def part_D():
     points = generate_m_pairs(50)
     X, Y = X_Y_from_points(points)
     empirical_errors = []
     true_errors = []
     Ks = []
+
     for k in range(1,20):
         intervals, besterror = find_best_interval(X, Y, k)
         empirical_errors.append(empirical_error(intervals, points))
         true_errors.append(true_error(intervals))
         Ks.append(k)
 
+    # plot k against true error
     plt.plot(Ks, true_errors)
-    plt.show()
-    plt.plot(Ks, empirical_errors)
+    plt.xlabel("k (intervals)")
+    plt.ylabel("True Error")
     plt.show()
 
+    # plot k against empirical error
+    plt.plot(Ks, empirical_errors)
+    plt.ylabel("Empirical Error")
+    plt.show()
+
+def part_E():
+    # generate additional holdout validation samples
+    holdout_samples = generate_m_pairs(50)
+    holdX, holdY = X_Y_from_points(holdout_samples)
+
+    # perform holdout validation
+
+######################################
+# Input arguments handling
+######################################
+
+if len(sys.argv) != 2:
+    print "Please specify the part you wish to initiate.\nValid arguments: -a, -c, -d, -e"
+
+else:
+    input = sys.argv[1]
+    parts = {
+        '-a' : part_A,
+        '-c' : part_C,
+        '-d' : part_D,
+        '-e' : part_E
+    }
+
+    if input not in parts:
+        print "Invalid argument"
+    else:
+        parts[input]()

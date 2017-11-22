@@ -1,0 +1,16 @@
+Students:
+Ido Calman 308353499
+Jonathan Somer 307923383
+
+Sources:
+main.py - contains the whole exercise
+
+Commands:
+Part (a): -a
+Part (c): -c
+Part (d): -d
+Part (e): -e
+
+Example:
+python main.py -a
+Should plot the points generated in part (a).
