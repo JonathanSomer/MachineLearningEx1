@@ -156,6 +156,7 @@ Calculates the empirical error given the intervals and points
 '''
 def empirical_error(intervals, points):
     error = 0.0
+
     for point in points:
         is_in_interval = False
         for interval in intervals:
@@ -163,6 +164,7 @@ def empirical_error(intervals, points):
                 is_in_interval = True
         if (point[1] == 0 and is_in_interval) or (point[1] == 1 and not is_in_interval):
             error += 1
+
     return error / len(points)
 
 ######################################
@@ -242,19 +244,20 @@ def part_E():
     holdout_samples = generate_m_pairs(50)
     holdX, holdY = X_Y_from_points(holdout_samples)
 
-    # retrieve hypothesis from part (d)
+    # retrieve k hypotheses from part (d)
     hypotheses = part_D(False)
 
     # measure true errors according to validation set
-    true_errors = []
+    test_errors = []
 
     # perform holdout validation
     for i in range(len(hypotheses)):
-        h = hypotheses[i]
-        true_errors.append(true_error(h))
+        test_errors.append(empirical_error(hypotheses[i], holdout_samples))
 
     # define K* to be the hypothesis with the minimal true error
-    k_star = true_errors.index(min(true_errors))
+    k_star = test_errors.index(min(test_errors)) + 1
+
+    print(k_star)
 
     return k_star
 
