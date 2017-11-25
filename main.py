@@ -84,9 +84,11 @@ def plot_points(points):
         plt.axvline(x=interval[1], c=current_color, linewidth=5)
         plt.plot(interval, [0.5,0.5], 'm', linewidth=10, c=current_color)
 
-    plt.xlabel("x")
-    plt.ylabel("y")
+    plt.xlabel("x - feature")
+    plt.ylabel("y - labels")
+    plt.savefig('a_100_points_k_2.jpg')
     plt.show()
+
 
 '''
 Calculates the true error for the distribution in the exercise
@@ -104,11 +106,7 @@ The algorithm:
 '''
 def true_error(intervals):
     # 1. split all segments that cross 0.25, 0.5, 0.75
-    crossing_intervals = [interval for interval in intervals if is_crossing(interval)]
-    non_crossing_intervals = [interval for interval in intervals if not is_crossing(interval)]
-
-    for interval in crossing_intervals:
-        non_crossing_intervals.extend(split_crossing_interval(interval))
+    intervals = split_crossing_intervals(intervals)
 
     # 2. sum segments length by type
     total_08_intervals_length = total_01_intervals_length = 0
@@ -128,6 +126,20 @@ def true_error(intervals):
 
     return error
 
+
+def split_crossing_intervals(intervals):
+    # there could be a maximum number of 3 crosses in a single interval
+    for i in range(3):
+        crossing_intervals = [interval for interval in intervals if is_crossing(interval)]
+        non_crossing_intervals = [interval for interval in intervals if not is_crossing(interval)]
+
+        for interval in crossing_intervals:
+            non_crossing_intervals.extend(split_crossing_interval(interval))
+
+        intervals = [interval for interval in non_crossing_intervals if interval[0] != interval[1] ] 
+    return intervals
+
+
 '''
 Returns true iff the interval is crossing either one of 0.25, 0.5, 0.75
 '''
@@ -138,7 +150,7 @@ def is_crossing(interval):
 Returns true iff the interval is crossing a certain value x
 '''
 def interval_crosses_x(interval, x):
-    return interval[0] <= x <= interval[1]
+    return interval[0] < x < interval[1]
 
 '''
 Splits intervals that cross into 2 separated intervals
@@ -190,7 +202,7 @@ def part_C():
             X, Y = X_Y_from_points(points)
             intervals, besterror = find_best_interval(X, Y, k) # not really going to use this besterror
             empirical_errors_sum += empirical_error(intervals, points=points)
-            print("empirical error for " + str(m) + " is: " + str(empirical_error(intervals, points=points)))
+            # print("empirical error for " + str(m) + " is: " + str(empirical_error(intervals, points=points)))
             true_errors_sum += true_error(intervals)
 
         Ms.append(m)
@@ -201,13 +213,18 @@ def part_C():
     plt.plot(Ms, true_errors)
     plt.xlabel("m (samples)")
     plt.ylabel("True Error")
+    plt.savefig('m_against_true_error.jpg')
     plt.show()
+
+
 
     # plot m against empirical error
     plt.plot(Ms, empirical_errors)
     plt.xlabel("m (samples)")
     plt.ylabel("Empirical Error")
+    plt.savefig('m_against_empirical_error.jpg')
     plt.show()
+
 
 def part_D(plot=True):
     points = generate_m_pairs(50)
@@ -229,12 +246,14 @@ def part_D(plot=True):
         plt.plot(Ks, true_errors)
         plt.xlabel("k (intervals)")
         plt.ylabel("True Error")
+        plt.savefig('k_against_true_error.jpg')
         plt.show()
 
         # plot k against empirical error
         plt.plot(Ks, empirical_errors)
         plt.xlabel("k (intervals)")
         plt.ylabel("Empirical Error")
+        plt.savefig('k_against_empirical_error.jpg')
         plt.show()
 
     return hypotheses
