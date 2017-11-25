@@ -234,7 +234,7 @@ def part_D(plot=True):
     true_errors = []
     Ks = []
 
-    for k in range(1,20):
+    for k in range(1,21):
         intervals, besterror = find_best_interval(X, Y, k)
         hypotheses.append(intervals)
         empirical_errors.append(empirical_error(intervals, points))
@@ -244,6 +244,7 @@ def part_D(plot=True):
     if (plot):
         # plot k against true error
         plt.plot(Ks, true_errors)
+        plt.axis([1,20,-0.1, 0.5])
         plt.xlabel("k (intervals)")
         plt.ylabel("True Error")
         plt.savefig('k_against_true_error.jpg')
@@ -251,6 +252,7 @@ def part_D(plot=True):
 
         # plot k against empirical error
         plt.plot(Ks, empirical_errors)
+        plt.axis([1,20,-0.1, 0.5])
         plt.xlabel("k (intervals)")
         plt.ylabel("Empirical Error")
         plt.savefig('k_against_empirical_error.jpg')
@@ -277,6 +279,19 @@ def part_E():
     k_star = test_errors.index(min(test_errors)) + 1
 
     print(k_star)
+    # print(hypotheses[k_star])
+
+
+    for interval in hypotheses[k_star]:
+        current_color = np.random.rand(3,1)
+        # plt.axvline(x=interval[0], c=current_color, linewidth=5)
+        # plt.axvline(x=interval[1], c=current_color, linewidth=5)
+        plt.plot(interval, [0.5,0.5], 'm', linewidth=10, c=current_color)
+
+    plt.xlabel("Hypothesis)")
+    plt.ylabel("no meaning for y actually")
+    plt.savefig('part_E.jpg')
+    plt.show()
 
     return k_star
 
