@@ -1,8 +1,9 @@
 import sys
 import random
 import numpy as np
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
 from numpy import *
 from intervals import *
 
@@ -10,6 +11,9 @@ from intervals import *
 # Helper functions
 ######################################
 
+'''
+Generates m pairs of points over [0,1] X {0,1}
+'''
 def generate_m_pairs(m):
     points = []
 
@@ -79,16 +83,15 @@ def plot_points(points):
     intervals, best_error = find_best_interval(X, Y, 2)
 
     for interval in intervals:
-        current_color = np.random.rand(3,1)
-        plt.axvline(x=interval[0], c=current_color, linewidth=5)
-        plt.axvline(x=interval[1], c=current_color, linewidth=5)
-        plt.plot(interval, [0.5,0.5], 'm', linewidth=10, c=current_color)
+        plt.axvline(x=interval[0], c='g', linewidth=5)
+        plt.axvline(x=interval[1], c='g', linewidth=5)
+        plt.plot(interval, [0.5,0.5], 'm', linewidth=1, c='g')
 
-    plt.xlabel("x - feature")
-    plt.ylabel("y - labels")
-    plt.savefig('a_100_points_k_2.jpg')
-    plt.show()
-
+    plt.xlabel("Feature")
+    plt.ylabel("Label")
+    plt.savefig("part_A.png")
+    print("Image part_A.png has been saved to directory!")
+    # plt.show()
 
 '''
 Calculates the true error for the distribution in the exercise
@@ -126,7 +129,9 @@ def true_error(intervals):
 
     return error
 
-
+'''
+Splits intervals that cross the "true" intervals into 2 separated intervals
+'''
 def split_crossing_intervals(intervals):
     # there could be a maximum number of 3 crosses in a single interval
     for i in range(3):
@@ -136,9 +141,8 @@ def split_crossing_intervals(intervals):
         for interval in crossing_intervals:
             non_crossing_intervals.extend(split_crossing_interval(interval))
 
-        intervals = [interval for interval in non_crossing_intervals if interval[0] != interval[1] ] 
+        intervals = [interval for interval in non_crossing_intervals if interval[0] != interval[1] ]
     return intervals
-
 
 '''
 Returns true iff the interval is crossing either one of 0.25, 0.5, 0.75
@@ -202,7 +206,6 @@ def part_C():
             X, Y = X_Y_from_points(points)
             intervals, besterror = find_best_interval(X, Y, k) # not really going to use this besterror
             empirical_errors_sum += empirical_error(intervals, points=points)
-            # print("empirical error for " + str(m) + " is: " + str(empirical_error(intervals, points=points)))
             true_errors_sum += true_error(intervals)
 
         Ms.append(m)
@@ -213,18 +216,17 @@ def part_C():
     plt.plot(Ms, true_errors)
     plt.xlabel("m (samples)")
     plt.ylabel("True Error")
-    plt.savefig('m_against_true_error.jpg')
-    plt.show()
-
-
+    plt.savefig('m_against_true_error.png')
+    print("Image m_against_true_error.png has been saved to directory!")
+    # plt.show()
 
     # plot m against empirical error
     plt.plot(Ms, empirical_errors)
     plt.xlabel("m (samples)")
     plt.ylabel("Empirical Error")
-    plt.savefig('m_against_empirical_error.jpg')
-    plt.show()
-
+    plt.savefig('m_against_empirical_error.png')
+    print("Image m_against_empirical_error.png has been saved to directory!")
+    # plt.show()
 
 def part_D(plot=True):
     points = generate_m_pairs(50)
@@ -247,23 +249,24 @@ def part_D(plot=True):
         plt.axis([1,20,-0.1, 0.5])
         plt.xlabel("k (intervals)")
         plt.ylabel("True Error")
-        plt.savefig('k_against_true_error.jpg')
-        plt.show()
+        plt.savefig('k_against_true_error.png')
+        print("Image k_against_true_error.png has been saved to directory!")
+        # plt.show()
 
         # plot k against empirical error
         plt.plot(Ks, empirical_errors)
         plt.axis([1,20,-0.1, 0.5])
         plt.xlabel("k (intervals)")
         plt.ylabel("Empirical Error")
-        plt.savefig('k_against_empirical_error.jpg')
-        plt.show()
+        plt.savefig('k_against_empirical_error.png')
+        print("Image k_against_empirical_error.png has been saved to directory!")
+        # plt.show()
 
     return hypotheses
 
 def part_E():
     # generate additional holdout validation samples
     holdout_samples = generate_m_pairs(50)
-    holdX, holdY = X_Y_from_points(holdout_samples)
 
     # retrieve k hypotheses from part (d)
     hypotheses = part_D(False)
@@ -279,19 +282,14 @@ def part_E():
     k_star = test_errors.index(min(test_errors)) + 1
 
     print(k_star)
-    # print(hypotheses[k_star])
-
 
     for interval in hypotheses[k_star]:
-        current_color = np.random.rand(3,1)
-        # plt.axvline(x=interval[0], c=current_color, linewidth=5)
-        # plt.axvline(x=interval[1], c=current_color, linewidth=5)
-        plt.plot(interval, [0.5,0.5], 'm', linewidth=10, c=current_color)
+        plt.plot(interval, [0.5,0.5], 'm', linewidth=10, c='g')
 
     plt.xlabel("Hypothesis)")
-    plt.ylabel("no meaning for y actually")
-    plt.savefig('part_E.jpg')
-    plt.show()
+    plt.savefig('part_E.png')
+    print("Image part_E.png has been saved to directory!")
+    # plt.show()
 
     return k_star
 

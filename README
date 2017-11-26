@@ -4,12 +4,19 @@ Jonathan Somer 307923383
 
 Sources:
 main.py - contains the whole exercise
+intervals.py - the provided ERM
 
 Commands:
 Part (a): -a
 Part (c): -c
 Part (d): -d
 Part (e): -e
+
+Output files:
+Part (a): part_A.png
+Part (c): m_against_true_error.png, m_against_empirical_error.png
+Part (d): k_against_true_error.png, k_against_empirical_error.png
+Part (e): part_E.png
 
 Example:
 python main.py -a
